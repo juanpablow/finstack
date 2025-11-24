@@ -1,0 +1,76 @@
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:16-alpine
+    container_name: finstack-postgres
+    environment:
+      POSTGRES_USER: finstack
+      POSTGRES_PASSWORD: finstack123
+      POSTGRES_DB: finstack_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U finstack"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - finstack-network
+
+  # Rust API (Development)
+  api:
+    build:
+      context: ./api
+      dockerfile: Dockerfile.dev
+    container_name: finstack-api
+    environment:
+      DATABASE_URL: postgresql://finstack:finstack123@postgres:5432/finstack_db
+      HOST: 0.0.0.0
+      PORT: 8080
+      RUST_LOG: info
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./api:/app
+      - api_cargo_cache:/usr/local/cargo/registry
+      - api_target_cache:/app/target
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - finstack-network
+    restart: unless-stopped
+
+  # Next.js Frontend (Development)
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+    container_name: finstack-frontend
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:8080
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+      - /app/.next
+    depends_on:
+      - api
+    networks:
+      - finstack-network
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+    driver: local
+  api_cargo_cache:
+    driver: local
+  api_target_cache:
+    driver: local
+
+networks:
+  finstack-network:
+    driver: bridge

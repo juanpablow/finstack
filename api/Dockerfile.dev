@@ -1,0 +1,13 @@
+FROM rust:latest
+
+WORKDIR /app
+
+# Install system dependencies
+RUN apt-get update && \
+    apt-get install -y postgresql-client && \
+    rm -rf /var/lib/apt/lists/*
+
+EXPOSE 8080
+
+# Run directly (volumes will handle code changes)
+CMD ["cargo", "run"]
