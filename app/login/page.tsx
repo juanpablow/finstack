@@ -2,6 +2,8 @@
 
 import type React from "react"
 import { useState } from "react"
+import { signIn } from "next-auth/react"
+import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { AuthLayout } from "@/components/auth/AuthLayout"
@@ -12,10 +14,33 @@ import { AuthDivider } from "@/components/auth/AuthDivider"
 export default function LoginPage() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
+  const [error, setError] = useState("")
+  const [isLoading, setIsLoading] = useState(false)
+  const router = useRouter()
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    console.log("Login submitted:", { email, password })
+    setError("")
+    setIsLoading(true)
+
+    try {
+      const result = await signIn("credentials", {
+        email,
+        password,
+        redirect: false,
+      })
+
+      if (result?.error) {
+        setError("Email ou senha inválidos")
+      } else {
+        router.push("/")
+        router.refresh()
+      }
+    } catch {
+      setError("Erro ao fazer login")
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (
@@ -25,12 +50,19 @@ export default function LoginPage() {
       <AuthDivider />
 
       <form onSubmit={handleSubmit} className="space-y-6">
+        {error && (
+          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
+            {error}
+          </div>
+        )}
+
         <Input
           type="email"
           label="Email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
+          disabled={isLoading}
         />
 
         <Input
@@ -39,14 +71,16 @@ export default function LoginPage() {
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           required
+          disabled={isLoading}
         />
 
         <div className="flex items-center justify-center">
           <Button
             type="submit"
-            className="w-full max-w-[370px] h-12 text-sm font-semibold bg-primary hover:bg-blue-500 text-white rounded-xl shadow-lg mt-6"
+            disabled={isLoading}
+            className="w-full max-w-[370px] h-12 text-sm font-semibold bg-primary hover:bg-blue-500 text-white rounded-xl shadow-lg mt-6 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            ENTRAR
+            {isLoading ? "ENTRANDO..." : "ENTRAR"}
           </Button>
         </div>
       </form>
