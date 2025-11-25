@@ -1,11 +1,11 @@
-"use client"
+"use client";
 
 interface AddExpenseFormProps {
-  expenseName: string
-  expenseValue: string
-  onNameChange: (value: string) => void
-  onValueChange: (value: string) => void
-  onSubmit: () => void
+  expenseName: string;
+  expenseValue: string;
+  onNameChange: (value: string) => void;
+  onValueChange: (value: string) => void;
+  onSubmit: () => void;
 }
 
 export function AddExpenseForm({
@@ -16,11 +16,13 @@ export function AddExpenseForm({
   onSubmit,
 }: AddExpenseFormProps) {
   return (
-    <div className="border-t border-gray-200 pt-6">
+    <div className="border-gray-200 pt-6">
       <h3 className="text-lg font-bold text-black mb-4">Adicionar custo</h3>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
         <div>
-          <label className="block text-sm font-medium text-black mb-2">Nome</label>
+          <label className="block text-sm font-medium text-black mb-2">
+            Nome
+          </label>
           <input
             type="text"
             value={expenseName}
@@ -30,7 +32,9 @@ export function AddExpenseForm({
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-black mb-2">Valor</label>
+          <label className="block text-sm font-medium text-black mb-2">
+            Valor
+          </label>
           <input
             type="text"
             value={expenseValue}
@@ -48,5 +52,5 @@ export function AddExpenseForm({
         Adicionar
       </button>
     </div>
-  )
+  );
 }

@@ -1,5 +1,6 @@
-import CredentialsProvider from "next-auth/providers/credentials";
 import type { NextAuthOptions } from "next-auth";
+import CredentialsProvider from "next-auth/providers/credentials";
+import { authApi } from "./api";
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -7,19 +8,41 @@ export const authOptions: NextAuthOptions = {
       name: "Credentials",
       credentials: {
         email: { label: "Email", type: "email" },
-        password: { label: "Password", type: "password" }
+        password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
-        if (credentials?.email === "user@example.com" && credentials?.password === "password") {
-          return {
-            id: "1",
-            email: "user@example.com",
-            name: "Usuario Teste"
-          };
+        if (!credentials?.email || !credentials?.password) {
+          console.log("Missing credentials");
+          return null;
         }
-        return null;
-      }
-    })
+
+        try {
+          console.log("Attempting login for:", credentials.email);
+          const response = await authApi.login({
+            email: credentials.email,
+            password: credentials.password,
+          });
+
+          console.log("Login response:", response);
+
+          if (response.token && response.user) {
+            const user = {
+              id: response.user.id,
+              email: response.user.email,
+              name: response.user.name,
+              token: response.token,
+            };
+            console.log("Returning user:", user);
+            return user;
+          }
+          console.log("Invalid response format");
+          return null;
+        } catch (error) {
+          console.error("Auth error:", error);
+          return null;
+        }
+      },
+    }),
   ],
   pages: {
     signIn: "/login",
@@ -28,15 +51,21 @@ export const authOptions: NextAuthOptions = {
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
+        token.email = user.email;
+        token.name = user.name;
+        token.token = user.token;
       }
       return token;
     },
     async session({ session, token }) {
       if (session.user) {
         session.user.id = token.id as string;
+        session.user.email = token.email as string;
+        session.user.name = token.name as string;
+        session.user.token = token.token as string;
       }
       return session;
-    }
+    },
   },
   session: {
     strategy: "jwt",

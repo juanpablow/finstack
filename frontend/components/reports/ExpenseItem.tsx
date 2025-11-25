@@ -1,23 +1,24 @@
-"use client"
+"use client";
 
-import { Pencil, Trash2 } from "lucide-react"
+import { formatCurrencyBRL } from "@/lib/formatters";
+import { Pencil, Trash2 } from "lucide-react";
 
 interface Expense {
-  id: string
-  name: string
-  value: number
+  id: string;
+  name: string;
+  value: number;
 }
 
 interface ExpenseItemProps {
-  expense: Expense
-  isEditing: boolean
-  editName: string
-  editValue: string
-  onEditNameChange: (value: string) => void
-  onEditValueChange: (value: string) => void
-  onSaveEdit: () => void
-  onStartEdit: () => void
-  onDelete: () => void
+  expense: Expense;
+  isEditing: boolean;
+  editName: string;
+  editValue: string;
+  onEditNameChange: (value: string) => void;
+  onEditValueChange: (value: string) => void;
+  onSaveEdit: () => void;
+  onStartEdit: () => void;
+  onDelete: () => void;
 }
 
 export function ExpenseItem({
@@ -32,7 +33,7 @@ export function ExpenseItem({
   onDelete,
 }: ExpenseItemProps) {
   return (
-    <div className="flex items-center justify-between border-b border-dotted border-gray-300 py-4">
+    <div className="flex items-center justify-between border-b border-gray-300 py-3">
       {isEditing ? (
         <>
           <input
@@ -61,7 +62,7 @@ export function ExpenseItem({
           <p className="flex-1 text-gray-900">{expense.name}</p>
           <div className="flex items-center gap-4">
             <p className="text-gray-900 font-semibold">
-              R$ {expense.value.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              R$ {formatCurrencyBRL(expense.value)}
             </p>
             <div className="flex gap-2">
               <button
@@ -81,5 +82,5 @@ export function ExpenseItem({
         </>
       )}
     </div>
-  )
+  );
 }
