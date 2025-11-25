@@ -6,11 +6,12 @@ services:
     environment:
       POSTGRES_USER: finstack
       POSTGRES_PASSWORD: finstack123
-      POSTGRES_DB: finstack_db
+      POSTGRES_DB: finstack
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      - ./api/migrations:/docker-entrypoint-initdb.d
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U finstack"]
       interval: 10s
@@ -26,10 +27,11 @@ services:
       dockerfile: Dockerfile.dev
     container_name: finstack-api
     environment:
-      DATABASE_URL: postgresql://finstack:finstack123@postgres:5432/finstack_db
+      DATABASE_URL: postgresql://finstack:finstack123@postgres:5432/finstack
       HOST: 0.0.0.0
       PORT: 8080
       RUST_LOG: info
+      JWT_SECRET: your-super-secret-jwt-key-change-in-production
     ports:
       - "8080:8080"
     volumes:
@@ -49,8 +51,8 @@ services:
       context: ./frontend
       dockerfile: Dockerfile.dev
     container_name: finstack-frontend
-    environment:
-      NEXT_PUBLIC_API_URL: http://localhost:8080
+    env_file:
+      - ./frontend/.env.local
     ports:
       - "3000:3000"
     volumes:
