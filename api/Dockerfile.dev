@@ -7,6 +7,15 @@ RUN apt-get update && \
     apt-get install -y postgresql-client && \
     rm -rf /var/lib/apt/lists/*
 
+# Copy only Cargo files first for dependency caching
+COPY Cargo.toml Cargo.lock* ./
+
+# Create dummy main to cache dependencies
+RUN mkdir -p src && \
+    echo "fn main() {}" > src/main.rs && \
+    cargo fetch && \
+    rm -rf src
+
 EXPOSE 8080
 
 # Run directly (volumes will handle code changes)

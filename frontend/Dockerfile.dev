@@ -2,12 +2,13 @@ FROM node:20-alpine
 
 WORKDIR /app
 
+# Copy package files
 COPY package.json package-lock.json* ./
 
-RUN npm install --legacy-peer-deps
-
-COPY . .
+# Install dependencies
+RUN npm ci --legacy-peer-deps 2>/dev/null || npm install --legacy-peer-deps
 
 EXPOSE 3000
 
+# Don't copy source, use volume mount instead
 CMD ["npm", "run", "dev"]
