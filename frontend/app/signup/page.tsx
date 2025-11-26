@@ -13,6 +13,7 @@ import type React from "react";
 import { useState } from "react";
 
 export default function SignupPage() {
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [confirmEmail, setConfirmEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -38,18 +39,14 @@ export default function SignupPage() {
 
     try {
       // Register user
-      const registerResponse = await authApi.register({ email, password });
-      console.log("Registration successful:", registerResponse);
+      const registerResponse = await authApi.register({ name, email, password });
 
       // Auto login after registration
-      console.log("Attempting auto-login with email:", email);
       const result = await signIn("credentials", {
         email,
         password,
         redirect: false,
       });
-
-      console.log("SignIn result:", result);
 
       if (result?.error) {
         console.error("SignIn error:", result.error);
@@ -57,7 +54,6 @@ export default function SignupPage() {
           "Erro ao fazer login após cadastro. Por favor, faça login manualmente."
         );
       } else {
-        console.log("Login successful, redirecting...");
         router.push("/");
         router.refresh();
       }
@@ -81,6 +77,15 @@ export default function SignupPage() {
             {error}
           </div>
         )}
+
+        <Input
+          type="text"
+          label="Nome"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          required
+          disabled={isLoading}
+        />
 
         <Input
           type="email"

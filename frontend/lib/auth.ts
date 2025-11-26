@@ -12,18 +12,15 @@ export const authOptions: NextAuthOptions = {
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) {
-          console.log("Missing credentials");
           return null;
         }
 
         try {
-          console.log("Attempting login for:", credentials.email);
           const response = await authApi.login({
             email: credentials.email,
             password: credentials.password,
           });
-
-          console.log("Login response:", response);
+          
 
           if (response.token && response.user) {
             const user = {
@@ -32,10 +29,8 @@ export const authOptions: NextAuthOptions = {
               name: response.user.name,
               token: response.token,
             };
-            console.log("Returning user:", user);
             return user;
           }
-          console.log("Invalid response format");
           return null;
         } catch (error) {
           console.error("Auth error:", error);
