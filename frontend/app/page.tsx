@@ -15,10 +15,19 @@ import { useMonthNavigation } from "@/hooks/useMonthNavigation";
 import { useReportsData } from "@/hooks/useReportsData";
 import { useReportsMutations } from "@/hooks/useReportsMutations";
 import { useSession } from "next-auth/react";
-import { useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useMemo, useState, useEffect } from "react";
 
 export default function Home() {
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
+  const router = useRouter();
+
+  // Redirect to login if not authenticated
+  useEffect(() => {
+    if (status === "unauthenticated") {
+      router.push("/login");
+    }
+  }, [status, router]);
   const { formatCurrency, parseCurrencyValue } = useCurrencyFormat();
   const { selectedMonth, selectedYear, handlePreviousMonth, handleNextMonth } =
     useMonthNavigation();
@@ -68,9 +77,14 @@ export default function Home() {
   const userName =
     session?.user?.name || session?.user?.email?.split("@")[0] || "Usuário";
 
-  // Loading state
-  if (categoriesLoading || incomeLoading) {
+  // Loading state - show loading while checking authentication
+  if (status === "loading" || categoriesLoading || incomeLoading) {
     return <LoadingState />;
+  }
+
+  // Don't render anything if not authenticated (middleware will redirect)
+  if (status === "unauthenticated") {
+    return null;
   }
 
   return (

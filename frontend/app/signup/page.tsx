@@ -7,12 +7,13 @@ import { SocialButtons } from "@/components/auth/SocialButtons";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { authApi } from "@/lib/api";
-import { signIn } from "next-auth/react";
+import { signIn, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import type React from "react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export default function SignupPage() {
+  const { status } = useSession();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [confirmEmail, setConfirmEmail] = useState("");
@@ -20,6 +21,13 @@ export default function SignupPage() {
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
+
+  // Redirect to dashboard if already authenticated
+  useEffect(() => {
+    if (status === "authenticated") {
+      router.push("/");
+    }
+  }, [status, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -39,7 +47,7 @@ export default function SignupPage() {
 
     try {
       // Register user
-      const registerResponse = await authApi.register({ name, email, password });
+      await authApi.register({ name, email, password });
 
       // Auto login after registration
       const result = await signIn("credentials", {
@@ -57,9 +65,9 @@ export default function SignupPage() {
         router.push("/");
         router.refresh();
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Registration error:", err);
-      setError(err.message || "Erro ao criar conta");
+      setError(err instanceof Error ? err.message : "Erro ao criar conta");
     } finally {
       setIsLoading(false);
     }
